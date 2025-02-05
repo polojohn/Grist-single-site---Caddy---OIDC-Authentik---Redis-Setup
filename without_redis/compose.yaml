@@ -1,0 +1,59 @@
+########################### SERVICES ###########################
+services:
+
+  ########################### GRIST ###########################
+  grist:
+    container_name: grist
+    image: gristlabs/grist
+    restart: unless-stopped
+
+    ########################### ENVIRONMENT ###########################
+    environment:
+      # Grist Domain Configuration
+      GRIST_DOMAIN: grist.mycooldomain.com  # subdomain you gave grist and your main domain (do not include https://)
+      APP_HOME_URL: https://grist.mycooldomain.com  # same as above but make sure it has https://
+      APP_DOC_URL: https://grist.mycooldomain.com  # as above, make sure it has https://
+
+      # Single Team Site Configuration
+      GRIST_SINGLE_ORG: justme  # Add any old name for your team of one
+      GRIST_DEFAULT_EMAIL: itsme@gmail.com  # This will be the admin user
+      GRIST_ORG_IN_PATH: true  # This is related to setting up a single-user site
+
+      # OpenID Connect (SSO) Authentication
+      GRIST_OIDC_SP_HOST: https://grist.mycooldomain.com  # This should be your https:// Grist domain that points to your reverse proxy
+      GRIST_OIDC_IDP_SCOPES: openid profile email  # Leave this as is
+      GRIST_OIDC_IDP_SKIP_END_SESSION_ENDPOINT: false  # Leave this as is
+      # Copy over from Authentik provider
+      GRIST_OIDC_IDP_ISSUER: https://auth.mycooldomain.com/application/o/grist/  # OpenID Configuration URL - without the end part /.well-known/openid-configuration
+      GRIST_OIDC_IDP_CLIENT_ID: 123456789abcdefg987654321  # Client ID from provider setting in Authentik
+      GRIST_OIDC_IDP_CLIENT_SECRET: A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2G3H4I5J6K7L8M9N0O1P2Q3R4S5T6U7V8W9X0Y1Z2A3B4C5D6E7F8G9H0I1J2K3L4M5N6O7P8Q9R0  # Check the Provider settings in Authentik to retrieve this key
+
+      # Security & Additional Configurations
+      GRIST_SESSION_SECRET: 12345678qwerty987654321  # Replace with something just as random
+      GRIST_HOME_INCLUDE_STATIC: true  # Leave this as is
+      GRIST_SANDBOX_FLAVOR: gvisor  # Leave this as is (unless you know what it does)
+      ALLOWED_WEBHOOK_DOMAINS: n8n.mycooldomain.com  # This would be my local Docker n8n, remove or change
+      COMMENTS: true  # Up to you
+
+    ########################### VOLUMES ###########################
+    volumes:
+      - /home/john/docker/grist:/persist  # Persistent storage for Grist - Give Grist a folder and let it manage its contents - create the necessary folders (one subfolder as well) and adjust permissions before deployment
+
+    ########################### NETWORKS ###########################
+    networks:
+      dockervlan:
+        ipv4_address: 192.168.1.9  # This is my frontend network
+      backend:  # This is my backend network - Grist is on both the front and the backend - Make sure Caddy is on the same networks as your setup
+
+    ########################### PORTS ###########################
+    ports:
+      - "8484:8484"  # Expose Grist on port 8484
+
+    ########################### HEALTHCHECK ###########################
+    # Keep this as it helps - no changes needed
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://grist:8484/status || exit 1"]
+      interval: 15s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
