@@ -1,0 +1,15 @@
+grist.mycooldomain.com {
+    @websockets {
+        header Connection *Upgrade*
+        header Upgrade websocket
+    }
+#i point to the docker container, you can change this but it works
+    reverse_proxy http://grist:8484 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    reverse_proxy @websockets http://grist:8484
+}
