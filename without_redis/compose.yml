@@ -37,7 +37,7 @@ services:
 
     ########################### VOLUMES ###########################
     volumes:
-      - /home/john/docker/grist:/persist  # Persistent storage for Grist - Give Grist a folder and let it manage its contents - create the necessary folders (one subfolder as well) and adjust permissions before deployment
+      - /home/john/docker/grist:/persist  # Persistent storage for Grist - Give Grist a folder and let it manage its contents - create the necessary folders and adjust permissions before deployment
 
     ########################### NETWORKS ###########################
     networks:
